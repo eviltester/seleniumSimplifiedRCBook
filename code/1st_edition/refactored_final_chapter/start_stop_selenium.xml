@@ -1,0 +1,15 @@
+    <target name="start-selenium-server">
+
+		<java jar="${libs}/selenium-server.jar" fork="true" spawn="true" />
+
+        <waitfor maxwait="2" maxwaitunit="minute" checkevery="100">
+            <http url="http://localhost:4444/selenium-server/driver/?cmd=testComplete"/>
+        </waitfor>
+    </target>
+
+    <target name="stop-selenium-server">
+        <get taskname="selenium-shutdown"
+            src="http://localhost:4444/selenium-server/driver/?cmd=shutDownSeleniumServer"
+            dest="${testresults}\selenium-shutdown-output.txt" ignoreerrors="true" />
+    </target>
+	

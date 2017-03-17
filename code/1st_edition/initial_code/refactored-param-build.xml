@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE project [
+       <!ENTITY start_stop_selenium SYSTEM "start_stop_selenium.xml">
+	   <!ENTITY properties_build_clean_compile_report SYSTEM "properties_build_clean_compile_report.xml">
+]>
+
+<project name="Run Selenium Tests" default="all_selenium_tests">
+
+	&properties_build_clean_compile_report;
+	&start_stop_selenium;
+
+	<!-- setup a default browser property, can be overwritten with -DBROWSER=iexplore etc.-->
+  	<property name="BROWSER" value="*firefox" />
+		
+	<target name="run_param_junit_tests">
+		<junit printsummary="yes" fork="yes" errorproperty="junit.error" failureproperty="junit.error">
+			<sysproperty key="selenium.browser" value="${BROWSER}"/>
+
+			<classpath refid="junit.class.path" />
+			<formatter type="xml" />
+
+			<test todir="${testresults}" name="com.eviltester.seleniumtutorials.refactored.HTML_form_tests" />
+			<test todir="${testresults}" name="com.eviltester.seleniumtutorials.refactored.JavaScript_With_Selenium_Tests" />
+			<test todir="${testresults}" name="com.eviltester.seleniumtutorials.refactored.SearchPageTests" />
+			<test todir="${testresults}" name="com.eviltester.seleniumtutorials.refactored.Selenium_Manager_Tests" />
+			<test todir="${testresults}" name="com.eviltester.seleniumtutorials.refactored.Static_HTML_tests" />
+			<test todir="${testresults}" name="com.eviltester.seleniumtutorials.chap31.datadriven.CalculateTwoNumbersMultipleTests" />
+		</junit>
+		
+		<antcall target="report-junit"/>
+		
+		<fail if="junit.error" message="Selenium test(s) failed.  See reports!"/>
+	</target>
+			
+    <target name="all_selenium_tests" depends="compile" description="The Main Target for running all tests">
+    	<antcall target="run_param_junit_tests"/>
+    </target>
+</project>

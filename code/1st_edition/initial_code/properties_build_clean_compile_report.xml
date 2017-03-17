@@ -1,0 +1,46 @@
+	<!-- Sets variables which can later be used. -->
+	<!-- The value of a property is accessed via ${} -->
+	<property name="src" location="src" />
+	<property name="build" location="build" />
+	<property name="libs" location="lib" />
+	<property name="testresults" location="junit-results" />
+	<property name="testreport" location="junit-report" />
+
+	<!-- Define the classpath which includes the junit.jar and the classes after compiling-->
+	<path id="junit.class.path">
+		<pathelement location="${libs}/junit-4.8.1.jar" />
+		<pathelement location="${libs}/selenium-java-client-driver.jar" />
+		<pathelement location="${libs}/selenium-server.jar" />
+		<pathelement location="${build}" />
+	</path>
+
+	<!-- Deletes the existing build and result directories-->
+	<target name="clean">
+		<delete dir="${build}" />
+		<delete dir="${testresults}" />
+		<delete dir="${testreport}" />
+	</target>
+	
+	<!-- Creates the  build, and test results directories-->
+	<target name="makedir">
+		<mkdir dir="${build}" />
+		<mkdir dir="${testresults}" />
+		<mkdir dir="${testreport}" />
+	</target>
+
+	<!-- Compiles the java code -->
+	<target name="compile" depends="clean, makedir">
+		<javac srcdir="${src}" destdir="${build}" debug="true" includeAntRuntime="false">
+			<classpath refid="junit.class.path" />
+		</javac>
+	</target>	
+	
+	
+    <target name="report-junit">
+    	<junitreport todir="${testreport}">
+    		<fileset dir="${testresults}">
+    			<include name="TEST-*.xml"/>
+    		</fileset>
+    		<report format="frames" todir="${testreport}"/>
+    	</junitreport>
+    </target>

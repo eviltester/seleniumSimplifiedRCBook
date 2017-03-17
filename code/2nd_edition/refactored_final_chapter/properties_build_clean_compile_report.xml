@@ -1,0 +1,127 @@
+	<!-- Sets variables which can later be used. -->
+	<!-- The value of a property is accessed via ${} -->
+	<property name="src" location="src" />
+	<property name="testDir" location="src/test/java" />
+	<property name="build" location="build" />
+	<property name="libs" location="lib" />
+	<property name="testresults" location="junit-results" />
+	<property name="testreport" location="junit-report" />
+	
+	
+	
+	<!--  
+		  Make this conditional to support all versions of Selenium
+		  based on a property called seleniumVersion
+		  
+		  http://ant.apache.org/manual/Tasks/condition.html
+		  http://ant.apache.org/manual/Tasks/conditions.html
+		  		  
+		  value and location are synonymous so don't really need to distinguish between
+		  them, only did this to keep semantics of the attributes correct		  
+	 -->
+
+	
+	<!--  default Selenium version to use by build script, override from command line
+		  e.g. ant -f buildfile.xml -DseleniumVersion=2.1.0 
+		  double check and adjust if necessary for each new version of Selenium
+	 -->
+	<property name="seleniumVersion" value="2.19.0" />
+		
+	<!--  use a regular naming convention for the folder to make things easy
+		  so all selenium versions go in lib/selenium_<versionnumber> 
+	-->
+	<property name="seleniumLibsFolder" value="selenium_${seleniumVersion}" />
+	
+	<!-- could have saved myself some pain by 
+	     simply renaming the files when placed in 
+	     appropriate libs subfolders -->
+	<condition property="seleniumServerJarName" value="selenium-server-standalone-${seleniumVersion}.jar">
+		<or>
+			<equals arg1="${seleniumVersion}" arg2="2.0.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.1.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.2.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.3.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.15.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.17.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.18.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.19.0" />
+		</or> 
+	</condition>
+	<condition property="seleniumServerJarName" value="selenium-server.jar">
+		<or>
+			<equals arg1="${seleniumVersion}" arg2="1.0.3" />
+			<!--  0.9.2 doesn't do everything we need for selenium simplified -->
+			<!--  <equals arg1="${seleniumVersion}" arg2="0.9.2" />  -->
+		</or> 
+	</condition>
+	
+	<property name="seleniumserverlocation" value="${libs}/${seleniumLibsFolder}/${seleniumServerJarName}" />
+
+	<condition property="seleniumclientlocation" value="">
+		<or>
+			<equals arg1="${seleniumVersion}" arg2="2.0.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.1.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.2.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.3.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.15.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.17.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.18.0" />
+			<equals arg1="${seleniumVersion}" arg2="2.19.0" />				
+		</or> 
+	</condition>
+	<condition property="seleniumclientlocation" value="${libs}/${seleniumLibsFolder}/selenium-java-client-driver.jar">
+		<or>
+			<equals arg1="${seleniumVersion}" arg2="1.0.3" />
+			<!--  <equals arg1="${seleniumVersion}" arg2="0.9.2" />  -->
+		</or> 
+	</condition>
+	
+	
+	<property name="seleniumclient" location="${seleniumclientlocation}" />	
+	<property name="seleniumserver" location="${seleniumserverlocation}" />
+		 
+		 
+	<echo message="RUNNING WITH ${seleniumVersion}" />
+	<echo message="CLIENT ${seleniumclientlocation}" />
+	<echo message="SERVER ${seleniumserverlocation}" />
+			 
+	<!-- Define the classpath which includes the junit.jar and the classes after compiling-->
+	<path id="junit.class.path">
+		<pathelement location="${libs}/junit-4.8.1.jar" />
+		<pathelement location="${seleniumclient}" />
+		<pathelement location="${seleniumserver}" />
+		<pathelement location="${build}" />
+	</path>
+	
+
+
+	<!-- Deletes the existing build and result directories-->
+	<target name="clean">
+		<delete dir="${build}" />
+		<delete dir="${testresults}" />
+		<delete dir="${testreport}" />
+	</target>
+	
+	<!-- Creates the  build, and test results directories-->
+	<target name="makedir">
+		<mkdir dir="${build}" />
+		<mkdir dir="${testresults}" />
+		<mkdir dir="${testreport}" />
+	</target>
+
+	<!-- Compiles the java code -->
+	<target name="compile" depends="clean, makedir">
+		<javac srcdir="${src}" destdir="${build}" debug="true" includeAntRuntime="false">
+			<classpath refid="junit.class.path" />
+		</javac>
+	</target>	
+	
+	
+    <target name="report-junit">
+    	<junitreport todir="${testreport}">
+    		<fileset dir="${testresults}">
+    			<include name="TEST-*.xml"/>
+    		</fileset>
+    		<report format="frames" todir="${testreport}"/>
+    	</junitreport>
+    </target>

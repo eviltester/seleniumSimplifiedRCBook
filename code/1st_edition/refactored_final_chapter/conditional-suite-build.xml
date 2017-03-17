@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE project [
+	   <!ENTITY properties_build_clean_compile_report SYSTEM "properties_build_clean_compile_report.xml">
+]>
+
+<project name="Run Selenium Tests" default="all_selenium_tests">
+
+	&properties_build_clean_compile_report;
+
+	<!-- setup a default browser property, can be overwritten with -DBROWSER=iexplore etc.-->
+  	<property name="BROWSER" value="*firefox" />
+		
+	<target name="run_param_junit_tests">
+		
+		<condition property="selenium.suitename" value="com.eviltester.seleniumSimplified.testSuites.AllTestsChromeOrFirefoxBrowserTestSuite" else="com.eviltester.seleniumSimplified.testSuites.AllTestsAnyBrowserTestSuite">
+			<or>
+				<equals arg1="${BROWSER}" arg2="*chrome"/>
+				<contains string="${BROWSER}" substring="firefox"/>
+			</or>
+		</condition>
+		
+		<junit printsummary="yes" fork="yes" errorproperty="junit.error" failureproperty="junit.error">
+
+			<sysproperty key="selenium.browser" value="${BROWSER}"/>
+			<sysproperty key="selenium.stopAfterSuite" value="TRUE"/>	
+			
+			<classpath refid="junit.class.path" />
+			<formatter type="xml" />
+			
+			<test todir="${testresults}" name="${selenium.suitename}" />
+						
+		</junit>
+		
+		<antcall target="report-junit"/>
+		
+		<fail if="junit.error" message="Selenium test(s) failed.  See reports!"/>
+	</target>
+			
+    <target name="all_selenium_tests" depends="compile" description="The Main Target for running all tests">
+    	<antcall target="run_param_junit_tests"/>
+    </target>
+</project>
