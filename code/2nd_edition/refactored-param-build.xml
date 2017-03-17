@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE project [
+	   <!ENTITY properties_build_clean_compile_report SYSTEM "properties_build_clean_compile_report.xml">
+]>
+
+<project name="Run Selenium Tests" default="all_selenium_tests">
+
+	&properties_build_clean_compile_report;
+
+	<!-- setup a default browser property, can be overwritten with -DBROWSER=iexplore etc.-->
+  	<property name="BROWSER" value="*firefox" />
+		
+	<target name="run_param_junit_tests">
+		<junit printsummary="yes" fork="yes" errorproperty="junit.error" failureproperty="junit.error">
+			<sysproperty key="selenium.browser" value="${BROWSER}"/>
+
+			<classpath refid="junit.class.path" />
+			<formatter type="xml" />
+
+			<batchtest todir="${testresults}" >
+			        <fileset dir="${testDir}" includes="**/*.java" excludes="**/testSuites/*.java"/>
+			</batchtest>
+			
+		</junit>
+		
+		<antcall target="report-junit"/>
+		
+		<fail if="junit.error" message="Selenium test(s) failed.  See reports!"/>
+	</target>
+			
+    <target name="all_selenium_tests" depends="compile" description="The Main Target for running all tests">
+    	<antcall target="run_param_junit_tests"/>
+    </target>
+</project>
